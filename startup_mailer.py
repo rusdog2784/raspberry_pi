@@ -1,3 +1,4 @@
+
 #!/usr/bin/python3
 """
 Author:         Scott Russell
@@ -26,11 +27,6 @@ Helpful Links:  Create Gmail App Password - https://support.google.com/accounts/
                 Python Utilities Git Repo - https://github.com/rusdog2784/python_utilities.git
                 Raspberry Pi Git Repo     - https://github.com/rusdog2784/raspberry_pi.git
 """
-
-# Append /home/pi to the list of available Python packages so that this script can import modules
-# from the repos, python_utilities and raspberry_pi.
-import sys
-sys.path.append("/home/pi")
 # Import system packages.
 import os
 import socket
@@ -38,16 +34,17 @@ import logging
 from datetime import datetime
 from pathlib import Path
 # Import custom packages.
-from python_utilities.gmail import Gmail, GmailException
-from raspberry_pi.rpi_system_statuses import get_cpu_temp, get_current_cpu_speed, \
+from gmail import Gmail, GmailException
+from logger import setup_custom_logger
+from rpi_system_statuses import get_cpu_temp, get_current_cpu_speed, \
     get_min_cpu_speed, get_max_cpu_speed, get_power_usage, get_memory_usage, \
     get_storage_usage
-from python_utilities.logger import setup_custom_logger
 
 
 # Setting up this script's global variables.
 APP_NAME = "startup_mailer"
-LOG_DIRECTORY = Path(f"/var/log/{APP_NAME}")
+LOG_DIRECTORY = Path(f"./logs")
+LOG_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 GMAIL_USERNAME = os.getenv("GMAIL_USERNAME")
 GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
