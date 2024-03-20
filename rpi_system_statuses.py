@@ -113,7 +113,11 @@ def get_storage_usage() -> dict:
     }
     """
     titles = ["total", "used", "free", "used %"]
+    # Raspberry Pi OS uses /dev/mmcblk0p2 for the root filesystem.
     storage_data = os.popen('df -h | grep "/dev/mmcblk0p2"').read()
+    if storage_data is None or storage_data == "":
+        # If the above command fails, try this one.
+        storage_data = os.popen('df -h | grep "/dev/root"').read()
     storage_data = re.sub(' +', ' ', storage_data).split(' ')[1:]
     storage_usage = dict()
     for i in range(len(titles)):
