@@ -30,18 +30,20 @@ Helpful Links:  Create Gmail App Password - https://support.google.com/accounts/
 # Import system packages.
 import os
 import socket
-import logging
-from datetime import datetime
 from pathlib import Path
 # Import custom packages.
-from gmail import Gmail, GmailException
+from gmail import Gmail
 from logger import setup_custom_logger
-from rpi_system_statuses import get_cpu_temp, get_current_cpu_speed, \
-    get_min_cpu_speed, get_max_cpu_speed, get_power_usage, get_memory_usage, \
+from rpi_system_statuses import (
+    get_cpu_temp,
+    get_power_usage,
+    get_memory_usage,
     get_storage_usage
+)
 
 
 # Setting up this script's global variables.
+PI_HOSTNAME = socket.gethostname()
 APP_NAME = "startup_mailer"
 LOG_DIRECTORY = Path(f"./logs")
 LOG_DIRECTORY.mkdir(parents=True, exist_ok=True)
@@ -50,6 +52,7 @@ GMAIL_USERNAME = os.getenv("GMAIL_USERNAME")
 GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
 RECIPIENTS = os.getenv("STARTUP_RECIPIENTS").replace(" ", "").split(",")
 DEFAULT_RECIPIENTS = ["srussell1383@gmail.com"]
+ERROR_SUBJECT = f"Startup script failed for '{PI_HOSTNAME}'"
 
 if os.path.exists(LOG_DIRECTORY):
     initial_message = f"{APP_NAME} started."
@@ -189,7 +192,7 @@ def run_script() -> None:
         send_an_email(subject=ERROR_SUBJECT, message=message, recipients=RECIPIENTS)
         exit(1)
     # Finally, send the email:
-    subject = f"Pi @ {ip_address} started."
+    subject = f"'{PI_HOSTNAME}' @ {ip_address} successfully started"
     send_an_email(subject=subject, message=system_information, recipients=RECIPIENTS)
 
 
