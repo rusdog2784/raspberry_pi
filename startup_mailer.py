@@ -192,7 +192,7 @@ def run_script() -> None:
         send_an_email(subject=ERROR_SUBJECT, message=message, recipients=RECIPIENTS)
         exit(1)
     # Finally, send the email:
-    subject = f"'{PI_HOSTNAME}' @ {ip_address} successfully started"
+    subject = f"'{PI_HOSTNAME}' successfully started @ {ip_address}"
     send_an_email(subject=subject, message=system_information, recipients=RECIPIENTS)
 
 
