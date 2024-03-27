@@ -94,6 +94,12 @@ else
 fi
 echo
 
+# Setting the DNS server to Cloudflare's public DNS (https://developers.cloudflare.com/1.1.1.1/setup/linux/#resolvconf)
+echo -e "[START] Setting DNS server to Cloudflare's public DNS..."
+echo -e "# Set by rpi_setup.sh\nnameserver 1.1.1.1\nnameserver 1.0.0.1" | sudo tee /etc/resolv.conf
+echo -e "[SUCCESS] DNS server set to Cloudflare's public DNS."
+echo
+
 ### Startup Mailer Setup #######################################################
 
 gmail_username=""	# default value
