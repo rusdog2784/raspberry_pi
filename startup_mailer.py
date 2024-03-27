@@ -50,7 +50,7 @@ LOG_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 GMAIL_USERNAME = os.getenv("GMAIL_USERNAME")
 GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
-RECIPIENTS = os.getenv("STARTUP_RECIPIENTS").replace(" ", "").split(",")
+RECIPIENTS = os.getenv("STARTUP_RECIPIENTS", "").replace(" ", "").split(",")
 DEFAULT_RECIPIENTS = ["srussell1383@gmail.com"]
 ERROR_SUBJECT = f"Startup script failed for '{PI_HOSTNAME}'"
 
