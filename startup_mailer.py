@@ -1,27 +1,17 @@
-
 #!/usr/bin/python3
+
 """
 Author:         Scott Russell
 
-Date:           02/10/21
+Date Created:   02/10/21
+Date Updated:   03/27/24
 
-Description:    A Python script that is meant to be called during the Raspberry Pi's
-                startup procedure. It gathers information about the Pi, then sends
-                an email to the STARTUP_RECIPIENTS with the Pi's IP address and the
-                information gathered.
+Description:    A Python script that is meant to be called during the Raspberry 
+                Pi's startup procedure. It gathers information about the Pi, 
+                then sends an email with the Pi's IP address and the information 
+                gathered.
 
-Prerequisites:  1) Open the /etc/rc.local file and add the following commands inside
-                   the if-statement block, 'if [ "$_IP" ]; then':
-                    a) export GMAIL_USERNAME="<your gmail email account>"
-                    b) export GMAIL_PASSWORD="<your gmail app password>"
-                    c) export STARTUP_RECIPIENTS="<email 1>, <email 2>, etc"
-                    d) python3 /home/pi/raspberry_pi/startup_mailer.py
-                2) Make sure the python_utilities and raspberry_pi repositories are
-                   cloned into your home path, /home/pi.
-                3) Within '/var/log', Create a directory called 'startup_mailer'
-                   ('mkdir /var/log/startup_mailer').
-                4) For good measure, make the startup_mailer.py script executable
-                   ('chmod +x startup_mailer.py').
+Prerequisites:  1) Run the `rpi_setup.sh` script.
 
 Helpful Links:  Create Gmail App Password - https://support.google.com/accounts/answer/185833?hl=en
                 Python Utilities Git Repo - https://github.com/rusdog2784/python_utilities.git
@@ -43,25 +33,21 @@ from rpi_system_statuses import (
 
 
 # Setting up this script's global variables.
-PI_HOSTNAME = socket.gethostname()
 APP_NAME = "startup_mailer"
 LOG_DIRECTORY = Path(f"./logs")
-LOG_DIRECTORY.mkdir(parents=True, exist_ok=True)
-
-GMAIL_USERNAME = os.getenv("GMAIL_USERNAME")
-GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
-RECIPIENTS = os.getenv("STARTUP_RECIPIENTS", "").replace(" ", "").split(",")
-DEFAULT_RECIPIENTS = ["srussell1383@gmail.com"]
-ERROR_SUBJECT = f"Startup script failed for '{PI_HOSTNAME}'"
-
-if os.path.exists(LOG_DIRECTORY):
-    initial_message = f"{APP_NAME} started."
-else:
-    initial_message = f"{APP_NAME} started, but the logging directory, " \
-                      f"{LOG_DIRECTORY}, does not exist."
-    LOG_DIRECTORY = Path(__file__).resolve()
+LOG_DIRECTORY.mkdir(parents=True, exist_ok=True)    
 LOGGER = setup_custom_logger(APP_NAME, LOG_DIRECTORY)
-LOGGER.info(initial_message)
+LOGGER.info(f"Starting the '{APP_NAME}' script.")
+DEFAULT_RECIPIENT = ["srussell1383@gmail.com"]
+try:
+    PI_HOSTNAME = socket.gethostname()
+    GMAIL_USERNAME = os.getenv("GMAIL_USERNAME")
+    GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
+    RECIPIENT = [os.getenv("STARTUP_RECIPIENT_EMAIL", "")]
+    ERROR_SUBJECT = f"Startup script failed for '{PI_HOSTNAME}'"
+except Exception as global_exception:
+    LOGGER.critical(f"Error setting up global variables: {global_exception}")
+    exit(1)
 
 
 def get_ip() -> str:
@@ -140,7 +126,7 @@ def system_status_information_as_html() -> str:
     return html
 
 
-def send_an_email(subject: str, message: str, recipients: list) -> bool:
+def send_an_email(subject: str, message: str, recipients : list) -> bool:
     """
     Using the imported Gmail module, this function sends an email to the provided
     recipients with the provided subject and message.
@@ -175,32 +161,29 @@ def run_script() -> None:
     :return: Void.
     """
     message = str()
+    
     # First, attempt to get the IP address:
     try:
         ip_address = get_ip()
     except Exception as ip_exception:
         LOGGER.error(f"Error gathering the IP address: {ip_exception}")
         message = f"<h4>Error gathering the IP address: {ip_exception}</h4>"
-        send_an_email(subject=ERROR_SUBJECT, message=message, recipients=RECIPIENTS)
+        send_an_email(subject=ERROR_SUBJECT, message=message, recipients=RECIPIENT)
         exit(1)
+        
     # Next, attempt to get the system information:
     try:
         system_information = system_status_information_as_html()
     except Exception as system_info_exception:
         LOGGER.error(f"Error gathering system information: {system_info_exception}")
         message = f"<h4>Error gathering system information: {system_info_exception}</h4>"
-        send_an_email(subject=ERROR_SUBJECT, message=message, recipients=RECIPIENTS)
+        send_an_email(subject=ERROR_SUBJECT, message=message, recipients=RECIPIENT)
         exit(1)
-    # Finally, send the email:
+    
+    # If everything works out, send the success email:
     subject = f"'{PI_HOSTNAME}' successfully started @ {ip_address}"
-    send_an_email(subject=subject, message=system_information, recipients=RECIPIENTS)
+    send_an_email(subject=subject, message=system_information, recipients=RECIPIENT)
 
 
 if __name__ == "__main__":
-    # Before doing anything, make sure the script successfully gathered the required
-    # environment variables. If it didn't, notify the default recipient and quit.
-    if None in (GMAIL_USERNAME, GMAIL_PASSWORD, RECIPIENTS):
-        message = "<h4>The environment variables could not be found.</h4>"
-        send_an_email(subject=ERROR_SUBJECT, message=message, recipients=DEFAULT_RECIPIENTS)
-        exit(1)
     run_script()
