@@ -1,12 +1,12 @@
 [Unit]
 Description=RaspberryPi Startup Mailer Service
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
 ExecStart=/usr/bin/python3 /home/pi/raspberry_pi/startup_mailer.py
 EnvironmentFile=/home/pi/raspberry_pi/startup_mailer.env
-Restart=always
 
 [Install]
 WantedBy=multi-user.target
