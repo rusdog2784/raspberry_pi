@@ -24,7 +24,13 @@ echo
 
 ### Install Dependencies #######################################################
 
-dependencies=("nmap" "git")
+dependencies=(
+	"nmap"
+	"git"
+	"python3-venv"
+	"python3-dev"
+	"python3-pip"
+)
 
 echo -e "First things first. I'm going to update your system and install the"\
 		"following dependencies: "
